@@ -4,6 +4,10 @@ on:
   push:
     branches: [ main ]  # O la rama por defecto que utilices
 
+# Permitir lectura y escritura para que GitHub Actions pueda publicar en gh-pages
+permissions:
+  contents: write
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest

@@ -20,6 +20,29 @@
     </div>
   </div>
 
+  <nav class="nav" aria-label="Secciones">
+    <a
+      routerLink="/"
+      routerLinkActive="activo"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="nav-enlace">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+        <rect x="3" y="3" width="7" height="9" rx="2" stroke-width="1.8" />
+        <rect x="14" y="3" width="7" height="5" rx="2" stroke-width="1.8" />
+        <rect x="14" y="12" width="7" height="9" rx="2" stroke-width="1.8" />
+        <rect x="3" y="16" width="7" height="5" rx="2" stroke-width="1.8" />
+      </svg>
+      Panel
+    </a>
+    <a routerLink="/recepcion" routerLinkActive="activo" class="nav-enlace">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+        <path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2" stroke-width="1.8" stroke-linecap="round" />
+        <circle cx="12" cy="12" r="3.2" stroke-width="1.8" />
+      </svg>
+      Recepción
+    </a>
+  </nav>
+
   <div class="indicadores">
     <app-status-dot [estado]="estadoServidor()" [etiqueta]="etiquetaServidor()" />
     <app-status-dot

@@ -79,12 +79,26 @@
 
 .stand-acciones {
   display: flex;
-  gap: 8px;
-  align-items: stretch;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.btn-clasificar {
-  flex: 1;
+/* La clasificación ya no se lanza desde la tarjeta: se hace al escanear. */
+.stand-nota {
+  font-size: 0.76rem;
+  line-height: 1.35;
+  color: var(--muted);
+}
+
+.stand-nota-enlace {
+  color: var(--primary);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.stand-nota-enlace:hover {
+  text-decoration: underline;
 }
 
 .btn-menu {
@@ -136,7 +150,7 @@
 }
 
 .menu button:hover {
-  background: rgba(79, 70, 229, 0.08);
+  background: rgba(102, 83, 68, 0.1);
 }
 
 .menu .menu-peligro {
@@ -144,7 +158,7 @@
 }
 
 .menu .menu-peligro:hover {
-  background: rgba(239, 68, 68, 0.1);
+  background: rgba(198, 108, 98, 0.14);
 }
 
 /* Skeletons de carga inicial. */

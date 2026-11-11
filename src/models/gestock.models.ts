@@ -103,3 +103,114 @@ export interface Kpis {
   total_hoy: number;
   ultimo: Movimiento | null;
 }
+
+// ============================================================
+//  Recepción Inteligente IoT (cámara → backend Go → MQTT → ESP32)
+// ============================================================
+
+/** Origen del ingreso. */
+export type OrigenRecepcion = 'camara' | 'manual' | 'sensor' | 'web';
+
+/** Resultado de validar y registrar un código escaneado. */
+export type EstadoRecepcion = 'REGISTRADO' | 'DESCONOCIDO' | 'ERROR';
+
+/** Estado de la clasificación física confirmada por el ESP32. */
+export type EstadoClasificacion = 'PENDIENTE' | 'COMPLETADA' | 'FALLIDA';
+
+/** Producto del catálogo temporal (memoria del backend / respaldo local). */
+export interface Producto {
+  codigo: string;
+  nombre: string;
+  stock: number;
+  stock_inicial: number;
+  activo: boolean;
+}
+
+/** Ingreso registrado al escanear un código de barras / QR. */
+export interface Recepcion {
+  id: number;
+  codigo_producto: string;
+  nombre_producto: string;
+  cantidad: number;
+  id_operacion: string;
+  estado: EstadoRecepcion;
+  /** null cuando el registro no llegó a clasificarse (p. ej. desconocido). */
+  clasificacion: EstadoClasificacion | null;
+  origen: OrigenRecepcion;
+  fecha_registro: string; // ISO-8601
+  fecha_clasificacion?: string;
+}
+
+/** Estado del sensor HC-SR04. */
+export interface SensorEstado {
+  caja_presente: boolean;
+  ultima_deteccion?: string;
+  dispositivo: string;
+  detecciones: number;
+}
+
+/** Estado IoT consolidado (GET /api/demo/estado-iot). */
+export interface EstadoIoT {
+  sensor: SensorEstado;
+  esp32_online: boolean;
+  esp32_last_seen?: string;
+  mqtt_conectado: boolean;
+  ultimo_mensaje: string;
+  servo: 'REPOSO' | 'CLASIFICANDO';
+  clasificacion: string;
+  simulacion: boolean;
+  total_productos: number;
+  total_recepciones: number;
+  registrados: number;
+  desconocidos: number;
+  unidades_hoy: number;
+}
+
+/** Respuesta de POST /api/demo/recepciones. */
+export interface RespuestaRecepcion {
+  ok: boolean;
+  duplicado?: boolean;
+  recepcion?: Recepcion;
+  producto?: Producto;
+  stock?: number;
+  mqtt_enviado?: boolean;
+  clasificacion?: EstadoClasificacion;
+  estado?: EstadoRecepcion;
+  codigo?: string;
+  mensaje?: string;
+}
+
+/** Resultado ya normalizado que consume la interfaz. */
+export interface ResultadoRecepcion {
+  ok: boolean;
+  estado: EstadoRecepcion;
+  codigo: string;
+  producto?: string;
+  stock?: number;
+  stock_inicial?: number;
+  cantidad: number;
+  mensaje: string;
+  mqtt_enviado: boolean;
+  /** null cuando el ingreso no se registró (no aplica clasificación). */
+  clasificacion: EstadoClasificacion | null;
+  id_operacion: string;
+  fecha_registro: string;
+  origen: OrigenRecepcion;
+  duplicado?: boolean;
+}
+
+/** Evento del sensor HC-SR04 (topic gestock/recepcion/sensor). */
+export interface EventoSensor {
+  evento: string;
+  estado: boolean;
+  dispositivo: string;
+}
+
+/** Confirmación de clasificación del ESP32 (topic gestock/recepcion/estado). */
+export interface EventoClasificacion {
+  estado: string;
+  codigo_producto?: string;
+  id_operacion?: string;
+  mensaje?: string;
+}
+

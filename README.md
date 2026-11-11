@@ -2,6 +2,39 @@
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.2.6.
 
+## Secciones de la aplicación
+
+- **Panel** (`/`): KPIs, ocupación de stands en tiempo real y auditoría de movimientos.
+- **Recepción Inteligente IoT** (`/recepcion`): el sensor **HC-SR04** detecta la
+  caja, la **cámara** lee su código de barras/QR, el **backend Go** valida y suma
+  `+1` al stock, y la orden viaja por **MQTT** hasta el **ESP32**, que clasifica
+  físicamente la caja (servo + LED verde + LCD). Todo se ve en tiempo real con el
+  diseño **Beige Premium**.
+
+## Recepción Inteligente IoT
+
+Arquitectura, instalación, configuración de **EMQX**, cableado, endpoints,
+pruebas y despliegue:
+
+- **[`docs/recepcion-inteligente.md`](docs/recepcion-inteligente.md)** — guía completa.
+- [`docs/recepcion-flujo.md`](docs/recepcion-flujo.md) — resumen del flujo.
+- [`backend/README.md`](backend/README.md) — backend **Go + Beego** (REST + puente MQTT).
+- [`firmware/esp32_gestock/README.md`](firmware/esp32_gestock/README.md) — firmware del ESP32.
+
+Puesta en marcha rápida:
+
+```bash
+# 1) Backend (modo simulación si no defines MQTT_BROKER_URL)
+cd backend && cp .env.example .env && go run .     # http://localhost:8080/api
+
+# 2) Frontend
+npm install && npm start                            # http://localhost:4200/recepcion
+```
+
+> Sin `MQTT_BROKER_URL` el backend arranca en **modo simulación** y emula al
+> ESP32; la interfaz lo indica con el chip «Modo demostración». Las credenciales
+> privilegiadas de EMQX viven solo en `backend/.env` (nunca en el frontend).
+
 ## Development server
 
 To start a local development server, run:

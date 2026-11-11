@@ -1,0 +1,30 @@
+name: Desplegar Frontend en GitHub Pages
+
+on:
+  push:
+    branches: [ main ]  # O la rama por defecto que utilices
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js (v24.x)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Compilar para producción
+        run: npm run build -- --configuration production --base-href "/Proyecto_micro/"
+
+      - name: Desplegar en GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist/gestock-client/browser

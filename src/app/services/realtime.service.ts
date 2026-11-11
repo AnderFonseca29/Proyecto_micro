@@ -2,7 +2,12 @@ import { Injectable, OnDestroy, signal } from '@angular/core';
 import { Subject } from 'rxjs';
 import mqtt, { MqttClient } from 'mqtt';
 import { environment } from '../../environments/environment';
-import { DeviceStatus, EstadoConexion } from '../../models/gestock.models';
+import {
+  DeviceStatus,
+  EstadoConexion,
+  EventoClasificacion,
+  EventoSensor,
+} from '../../models/gestock.models';
 
 /** Evento publicado por el ESP32 en <prefijo>/evento. */
 export interface EventoEsp {
@@ -13,10 +18,25 @@ export interface EventoEsp {
   origen?: 'hardware' | 'web';
 }
 
+/** Orden de clasificación que viaja del backend/web hacia el ESP32. */
+export interface OrdenClasificacion {
+  registro: 'exitoso';
+  codigo_producto: string;
+  accion: 'clasificar';
+  id_operacion: string;
+}
+
 /**
  * RealtimeService — cliente MQTT (WebSocket seguro) hacia el broker.
- * Escucha <prefijo>/evento y <prefijo>/status; envía a <prefijo>/cmd.
- * mqtt.js reconecta solo; aquí solo reflejamos el estado en un Signal.
+ *
+ * Publica/escucha los topics de la Recepción Inteligente:
+ *  - <prefijo>/sensor       (ESP32 → web): detección del HC-SR04
+ *  - <prefijo>/clasificador (web → ESP32): orden de clasificación
+ *  - <prefijo>/estado       (ESP32 → web): confirmación física
+ *
+ * También mantiene el canal heredado del panel: <prefijo>/evento,
+ * <prefijo>/status y <prefijo>/cmd. mqtt.js reconecta solo; aquí solo
+ * reflejamos el estado en un Signal.
  */
 @Injectable({ providedIn: 'root' })
 export class RealtimeService implements OnDestroy {
@@ -27,9 +47,18 @@ export class RealtimeService implements OnDestroy {
   private readonly eventos = new Subject<EventoEsp>();
   readonly eventos$ = this.eventos.asObservable();
 
+  private readonly sensor = new Subject<EventoSensor>();
+  readonly eventosSensor$ = this.sensor.asObservable();
+
+  private readonly clasificacion = new Subject<EventoClasificacion>();
+  readonly eventosClasificacion$ = this.clasificacion.asObservable();
+
   private readonly tEvento = `${environment.prefijo}/evento`;
   private readonly tStatus = `${environment.prefijo}/status`;
   private readonly tCmd = `${environment.prefijo}/cmd`;
+  private readonly tSensor = environment.topicSensor;
+  private readonly tClasificador = environment.topicClasificador;
+  private readonly tEstado = environment.topicEstado;
   private cliente: MqttClient;
 
   constructor() {
@@ -44,7 +73,9 @@ export class RealtimeService implements OnDestroy {
 
     this.cliente.on('connect', () => {
       this.estado.set('en_linea');
-      this.cliente.subscribe([this.tEvento, this.tStatus], { qos: 0 });
+      this.cliente.subscribe([this.tEvento, this.tStatus, this.tSensor, this.tEstado], {
+        qos: 0,
+      });
     });
     this.cliente.on('reconnect', () => this.estado.set('reconectando'));
     this.cliente.on('close', () => {
@@ -75,6 +106,16 @@ export class RealtimeService implements OnDestroy {
         if (e && typeof e.evt === 'string') {
           this.eventos.next(e);
         }
+      } else if (topic === this.tSensor) {
+        const s = json as EventoSensor;
+        if (s && typeof s.evento === 'string') {
+          this.sensor.next(s);
+        }
+      } else if (topic === this.tEstado) {
+        const c = json as EventoClasificacion;
+        if (c && typeof c.estado === 'string') {
+          this.clasificacion.next(c);
+        }
       }
     });
   }
@@ -84,6 +125,22 @@ export class RealtimeService implements OnDestroy {
     const cmd_id = Math.random().toString(16).slice(2, 10);
     this.cliente.publish(this.tCmd, JSON.stringify({ ...cmd, cmd_id }), { qos: 0 });
     return cmd_id;
+  }
+
+  /**
+   * Dispara la clasificación física en la maqueta tras un ingreso válido.
+   * Publica la orden en <prefijo>/clasificador (topic que escucha el ESP32:
+   * enciende el LED verde, actualiza el LCD y mueve el servo para empujar la
+   * caja a su estante).
+   *
+   * Devuelve false si el broker no está en línea (no se puede confirmar nada).
+   */
+  publicarClasificacion(orden: OrdenClasificacion): boolean {
+    if (this.estado() !== 'en_linea') {
+      return false;
+    }
+    this.cliente.publish(this.tClasificador, JSON.stringify(orden), { qos: 1 });
+    return true;
   }
 
   reintentarAhora(): void {

@@ -43,20 +43,10 @@
           </div>
 
           <div class="stand-acciones">
-            <button
-              type="button"
-              class="btn btn-primary btn-clasificar"
-              [disabled]="clasificando() !== null || v.stand.ocupacion >= v.stand.capacidad"
-              (click)="clasificar(v.stand)">
-              @if (clasificando() === v.codigo) {
-                <span class="spinner" aria-hidden="true"></span>
-                Enviando…
-              } @else if (v.stand.ocupacion >= v.stand.capacidad) {
-                Stand lleno
-              } @else {
-                Clasificar aquí
-              }
-            </button>
+            <span class="stand-nota">
+              Los ingresos se clasifican al escanear en
+              <a routerLink="/recepcion" class="stand-nota-enlace">Recepción</a>.
+            </span>
 
             <div class="menu-envoltura">
               <button

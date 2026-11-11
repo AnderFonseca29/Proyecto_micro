@@ -5,6 +5,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { ProgressRing } from '../../shared/components/progress-ring/progress-ring';
 import { ConfirmModal } from '../../shared/components/confirm-modal/confirm-modal';
@@ -26,13 +27,14 @@ interface StandVista {
 
 /**
  * StandsSection — tarjetas A/B/C con anillo de progreso SVG animado,
- * ocupación/capacidad, estado, botón "Clasificar aquí", edición de capacidad
- * y reinicio de ocupación (con modales de confirmación).
+ * ocupación/capacidad, estado, edición de capacidad y reinicio de ocupación
+ * (con modales de confirmación). La clasificación ya no se lanza desde aquí:
+ * se dispara al escanear en la página de Recepción.
  */
 @Component({
   selector: 'app-stands-section',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ProgressRing, ConfirmModal, EmptyState],
+  imports: [RouterLink, ProgressRing, ConfirmModal, EmptyState],
   templateUrl: './stands-section.html',
   styleUrl: './stands-section.scss',
 })
@@ -44,8 +46,6 @@ export class StandsSection {
   readonly stands = this.store.stands.asReadonly();
   readonly cargando = this.store.cargandoStands.asReadonly();
 
-  /** Stand que se está clasificando desde la tarjeta (spinner del botón). */
-  readonly clasificando = signal<string | null>(null);
   /** Menú desplegado por stand (código o null). */
   readonly menuAbierto = signal<string | null>(null);
 
@@ -71,22 +71,6 @@ export class StandsSection {
       return { codigo: stand.codigo, stand, porcentaje, etiqueta, clase, color };
     }),
   );
-
-  /** Clasifica hacia el stand indicado (comando SORT vía backend). */
-  async clasificar(stand: Stand): Promise<void> {
-    if (this.clasificando() !== null || stand.ocupacion >= stand.capacidad) {
-      return;
-    }
-    this.clasificando.set(stand.codigo);
-    try {
-      const res = await firstValueFrom(this.api.clasificar(stand.codigo));
-      this.toast.exito(`Comando enviado al stand ${stand.codigo}`, `cmd_id ${res.cmd_id} · ${res.rfid}`);
-    } catch (err) {
-      this.toast.error('No se pudo clasificar', this.mensajeError(err, stand.codigo));
-    } finally {
-      this.clasificando.set(null);
-    }
-  }
 
   abrirEditar(stand: Stand): void {
     this.menuAbierto.set(null);

@@ -302,6 +302,133 @@ input[type='date'].input {
   pointer-events: none;
 }
 
+/* ============================================================
+   Tema "Beige Premium" — Panel (dashboard).
+   Se activa con la clase `.tema-beige` en el host del Panel.
+   Redefine los tokens globales y las primitivas (.btn, .badge,
+   .input, .skeleton) solo dentro del Panel; el resto de GESTOCK
+   conserva su identidad Light Glassmorphism. Réplica de Recepción.
+   ============================================================ */
+.tema-beige {
+  /* Paleta beige */
+  --beige: #e8ddcc;
+  --beige-crema: #f7f3eb;
+  --beige-marfil: #faf8f3;
+  --beige-arena: #d8c7ae;
+  --beige-cafe-claro: #b69b7d;
+  --beige-cafe-oscuro: #665344;
+  --beige-oliva: #78866b;
+  --beige-exito: #638568;
+  --beige-error: #c66c62;
+  --beige-blanco: #ffffff;
+  --beige-borde: rgba(102, 83, 68, 0.14);
+  --beige-borde-fuerte: rgba(102, 83, 68, 0.24);
+
+  /* Redefinición de los tokens globales dentro del Panel */
+  --bg: #f7f3eb;
+  --surface: #faf8f3;
+  --border: var(--beige-borde);
+  --text: #352f29;
+  --muted: #82776b;
+
+  --primary: var(--beige-cafe-oscuro);
+  --accent: var(--beige-cafe-claro);
+  --ok: var(--beige-exito);
+  --warn: var(--beige-cafe-claro);
+  --danger: var(--beige-error);
+
+  --stand-a: var(--beige-cafe-oscuro);
+  --stand-b: var(--beige-oliva);
+  --stand-c: var(--beige-cafe-claro);
+
+  --blur: none;
+  --shadow-layer: 0 1px 2px rgba(53, 47, 41, 0.04), 0 10px 30px rgba(102, 83, 68, 0.1);
+  --shadow-hover: 0 2px 6px rgba(53, 47, 41, 0.06), 0 18px 44px rgba(102, 83, 68, 0.18);
+}
+
+/* Botones */
+.tema-beige .btn {
+  color: var(--text);
+  background: var(--beige-blanco);
+  border-color: var(--beige-borde-fuerte);
+}
+
+.tema-beige .btn-ghost {
+  background: transparent;
+  border-color: var(--beige-borde-fuerte);
+}
+
+.tema-beige .btn-ghost:hover:not(:disabled) {
+  background: var(--beige-crema);
+  border-color: rgba(102, 83, 68, 0.32);
+}
+
+.tema-beige .btn-primary {
+  color: #fff;
+  background: linear-gradient(135deg, var(--beige-cafe-claro), var(--beige-cafe-oscuro));
+  border-color: transparent;
+  box-shadow: 0 6px 16px rgba(102, 83, 68, 0.32);
+}
+
+.tema-beige .btn-primary:hover:not(:disabled) {
+  box-shadow: 0 10px 22px rgba(102, 83, 68, 0.42);
+}
+
+.tema-beige .btn-danger {
+  color: #fff;
+  background: linear-gradient(135deg, var(--beige-error), #d98a82);
+  border-color: transparent;
+  box-shadow: 0 6px 16px rgba(198, 108, 98, 0.3);
+}
+
+/* Badges */
+.tema-beige .badge-ok {
+  color: #3f5540;
+  background: rgba(99, 133, 104, 0.16);
+  border: 1px solid rgba(99, 133, 104, 0.36);
+}
+
+.tema-beige .badge-warn {
+  color: #8a6b33;
+  background: rgba(182, 155, 125, 0.24);
+  border: 1px solid rgba(182, 155, 125, 0.46);
+}
+
+.tema-beige .badge-danger {
+  color: #8f453d;
+  background: rgba(198, 108, 98, 0.16);
+  border: 1px solid rgba(198, 108, 98, 0.36);
+}
+
+/* Inputs */
+.tema-beige .input {
+  color: var(--text);
+  background: var(--beige-blanco);
+  border: 1px solid var(--beige-borde-fuerte);
+  border-radius: 12px;
+}
+
+.tema-beige .input::placeholder {
+  color: var(--muted);
+  opacity: 0.75;
+}
+
+.tema-beige .input:focus {
+  border-color: var(--beige-cafe-claro);
+  box-shadow: 0 0 0 3px rgba(182, 155, 125, 0.26);
+}
+
+/* Skeletons */
+.tema-beige .skeleton {
+  background: linear-gradient(
+    100deg,
+    rgba(102, 83, 68, 0.08) 40%,
+    rgba(102, 83, 68, 0.16) 50%,
+    rgba(102, 83, 68, 0.08) 60%
+  );
+  background-size: 200% 100%;
+}
+
 /* ---------- Utilidades de texto ---------- */
 .mono {
   font-family: var(--font-mono);

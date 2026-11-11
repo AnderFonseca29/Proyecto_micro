@@ -1,0 +1,649 @@
+<div class="recepcion">
+  <!-- ===================== A. Encabezado ===================== -->
+  <header class="rp-header">
+    <div class="rp-header-texto">
+      <span class="rp-eyebrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+          <path d="M3 7l9-4 9 4-9 4-9-4z" stroke-width="1.7" stroke-linejoin="round" />
+          <path d="M3 7v10l9 4 9-4V7" stroke-width="1.7" stroke-linejoin="round" />
+          <path d="M12 11v10" stroke-width="1.7" />
+        </svg>
+        Recepción inteligente IoT
+      </span>
+      <h1 class="rp-titulo">Recepción inteligente</h1>
+      <p class="rp-subtitulo">
+        Controla el ingreso de mercancía mediante escaneo y clasificación automática IoT.
+      </p>
+    </div>
+
+    <div class="rp-header-badges">
+      <span class="rp-badge-demo">
+        <span class="rp-badge-punto" aria-hidden="true"></span>
+        Modo demostración
+      </span>
+      <span
+        class="rp-chip"
+        [class.ok]="backendOk() === true"
+        [class.error]="backendOk() === false"
+        [class.warn]="backendOk() === null"
+      >
+        <span class="rp-chip-punto" aria-hidden="true"></span>
+        @if (backendOk() === true) {
+          Backend en línea
+        } @else if (backendOk() === false) {
+          Backend no disponible · modo local
+        } @else {
+          Conectando con el backend…
+        }
+      </span>
+    </div>
+  </header>
+
+  <!-- ===================== B. Indicadores principales ===================== -->
+  <section class="rp-indicadores" aria-label="Indicadores principales">
+    <article class="rp-card rp-indicador" [class.activo]="deteccionReciente()">
+      <span class="rp-indicador-icono sensor">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+          <path d="M4 12a8 8 0 0 1 16 0" stroke-width="1.8" stroke-linecap="round" />
+          <path d="M7 12a5 5 0 0 1 10 0" stroke-width="1.8" stroke-linecap="round" />
+          <circle cx="12" cy="15" r="1.6" fill="currentColor" stroke="none" />
+        </svg>
+      </span>
+      <div class="rp-indicador-texto">
+        <span class="rp-indicador-etiqueta">Sensor HC-SR04</span>
+        <strong class="rp-indicador-valor">
+          {{ cajaPresente() ? 'Caja detectada' : 'En espera' }}
+        </strong>
+      </div>
+      <span
+        class="rp-punto"
+        [class.ok]="cajaPresente()"
+        [class.pulso]="deteccionReciente()"
+        aria-hidden="true"
+      ></span>
+    </article>
+
+    <article class="rp-card rp-indicador">
+      <span class="rp-indicador-icono esp32">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+          <rect x="6" y="6" width="12" height="12" rx="2" stroke-width="1.8" />
+          <path
+            d="M9 3v2M12 3v2M15 3v2M9 19v2M12 19v2M15 19v2M3 9h2M3 12h2M3 15h2M19 9h2M19 12h2M19 15h2"
+            stroke-width="1.6"
+            stroke-linecap="round"
+          />
+        </svg>
+      </span>
+      <div class="rp-indicador-texto">
+        <span class="rp-indicador-etiqueta">Estado del ESP32</span>
+        <strong class="rp-indicador-valor">
+          {{ estado().esp32_online ? 'En línea' : 'Desconectado' }}
+        </strong>
+      </div>
+      <span
+        class="rp-punto"
+        [class.ok]="estado().esp32_online"
+        [class.pulso]="estado().esp32_online"
+        aria-hidden="true"
+      ></span>
+    </article>
+
+    <article class="rp-card rp-indicador">
+      <span class="rp-indicador-icono mqtt">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+          <circle cx="12" cy="12" r="2.2" stroke-width="1.8" />
+          <path
+            d="M7.5 7.5a6.4 6.4 0 0 0 0 9M16.5 7.5a6.4 6.4 0 0 1 0 9"
+            stroke-width="1.8"
+            stroke-linecap="round"
+          />
+          <path
+            d="M4.5 4.5a10.6 10.6 0 0 0 0 15M19.5 4.5a10.6 10.6 0 0 1 0 15"
+            stroke-width="1.6"
+            stroke-linecap="round"
+            opacity="0.6"
+          />
+        </svg>
+      </span>
+      <div class="rp-indicador-texto">
+        <span class="rp-indicador-etiqueta">Conexión MQTT</span>
+        <strong class="rp-indicador-valor">
+          {{ estado().mqtt_conectado ? 'Conectado' : 'Desconectado' }}
+        </strong>
+      </div>
+      <span
+        class="rp-punto"
+        [class.ok]="estado().mqtt_conectado"
+        [class.pulso]="estado().mqtt_conectado"
+        aria-hidden="true"
+      ></span>
+    </article>
+
+    <article class="rp-card rp-indicador">
+      <span class="rp-indicador-icono caja">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+          <path d="M21 8v13H3V8" stroke-width="1.8" stroke-linejoin="round" />
+          <path d="M1 3h22v5H1z" stroke-width="1.8" stroke-linejoin="round" />
+          <path d="M10 12h4" stroke-width="1.8" stroke-linecap="round" />
+        </svg>
+      </span>
+      <div class="rp-indicador-texto">
+        <span class="rp-indicador-etiqueta">Productos recibidos</span>
+        <strong class="rp-indicador-valor mono">{{ serv.productosRecibidos() }}</strong>
+      </div>
+    </article>
+
+    <article class="rp-card rp-indicador">
+      <span class="rp-indicador-icono total">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+          <path d="M4 5h16M4 12h16M4 19h10" stroke-width="1.8" stroke-linecap="round" />
+        </svg>
+      </span>
+      <div class="rp-indicador-texto">
+        <span class="rp-indicador-etiqueta">Total de recepciones</span>
+        <strong class="rp-indicador-valor mono">{{ serv.totalRecepciones() }}</strong>
+      </div>
+    </article>
+  </section>
+
+  <!-- ===================== Cuerpo principal ===================== -->
+  <div class="rp-grid">
+    <!-- Columna izquierda -->
+    <div class="rp-col">
+      <!-- ============ C. Panel de escaneo ============ -->
+      <section class="rp-card rp-panel rp-escaner" aria-label="Panel de escaneo">
+        <div class="rp-panel-cabecera">
+          <div>
+            <h2 class="rp-seccion-titulo">Panel de escaneo</h2>
+            <span class="rp-seccion-sub">Cámara del dispositivo · QR y códigos de barras</span>
+          </div>
+          <span class="rp-chip-estado" [class.activo]="escaneando()" [class.pausa]="pausado()">
+            <span class="rp-chip-punto" aria-hidden="true"></span>
+            @if (pausado() && escaneando()) {
+              Lectura pausada
+            } @else if (escaneando()) {
+              Leyendo…
+            } @else {
+              Detenido
+            }
+          </span>
+        </div>
+
+        <!-- Visor de la cámara -->
+        <div class="rp-lector" [class.activo]="escaneando()">
+          <div [id]="ID_LECTOR" class="rp-lector-video"></div>
+
+          @if (!escaneando()) {
+            <div class="rp-lector-placeholder">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                <path
+                  d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                />
+                <circle cx="12" cy="12" r="3.2" stroke-width="1.8" />
+              </svg>
+              <p>{{ soportado() ? 'La cámara está detenida' : 'Cámara no disponible' }}</p>
+              <span class="rp-muted">Pulsa «Activar cámara» para empezar a leer</span>
+            </div>
+          } @else {
+            <div class="rp-lector-marco" aria-hidden="true">
+              <span class="rp-esquina arriba-izq"></span>
+              <span class="rp-esquina arriba-der"></span>
+              <span class="rp-esquina abajo-izq"></span>
+              <span class="rp-esquina abajo-der"></span>
+              @if (!pausado()) {
+                <span class="rp-linea-escaneo"></span>
+              }
+            </div>
+            @if (pausado()) {
+              <div class="rp-lector-pausa">
+                <span class="rp-lector-pausa-icono" aria-hidden="true">✓</span>
+                <span>Código capturado</span>
+                <button type="button" class="btn rp-btn-mini" (click)="nuevaLectura()">
+                  Nueva lectura
+                </button>
+              </div>
+            }
+          }
+        </div>
+
+        @if (errorCamara(); as err) {
+          <p class="rp-aviso-error" role="alert">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+              <path d="M12 9v4M12 17h.01" stroke-width="2" stroke-linecap="round" />
+              <path
+                d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"
+                stroke-width="1.7"
+                stroke-linejoin="round"
+              />
+            </svg>
+            <span>{{ err }}</span>
+          </p>
+        }
+
+        <!-- Controles de cámara -->
+        <div class="rp-controles-camara">
+          @if (camaras().length > 1) {
+            <label class="campo rp-campo-camara">
+              <span class="campo-etiqueta">Dispositivo de cámara</span>
+              <select
+                class="input"
+                [value]="camaraSel()"
+                (change)="cambiarCamara($any($event.target).value)"
+              >
+                @for (c of camaras(); track c.id) {
+                  <option [value]="c.id">{{ c.label || 'Cámara ' + ($index + 1) }}</option>
+                }
+              </select>
+            </label>
+          }
+
+          @if (escaneando()) {
+            <button type="button" class="btn btn-danger rp-btn-camara" (click)="detener()">
+              ■ Detener cámara
+            </button>
+          } @else {
+            <button
+              type="button"
+              class="btn btn-primary rp-btn-camara"
+              [disabled]="iniciando() || !soportado()"
+              (click)="iniciar()"
+            >
+              @if (iniciando()) {
+                <span class="spinner" aria-hidden="true"></span>
+                Iniciando…
+              } @else {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                  <path
+                    d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"
+                    stroke-width="1.9"
+                    stroke-linecap="round"
+                  />
+                  <circle cx="12" cy="12" r="3" stroke-width="1.9" />
+                </svg>
+                Activar cámara
+              }
+            </button>
+          }
+        </div>
+
+        <div class="rp-separador"><span>o ingresa el código manualmente</span></div>
+
+        <!-- Entrada manual -->
+        <form class="rp-manual" (submit)="$event.preventDefault(); registrarManual()">
+          <input
+            type="text"
+            class="input mono"
+            placeholder="Ej. PROD-1234"
+            autocomplete="off"
+            maxlength="80"
+            aria-label="Código del producto"
+            [value]="entradaManual()"
+            (input)="entradaManual.set($any($event.target).value)"
+          />
+          <button type="submit" class="btn btn-primary" [disabled]="procesando()">
+            @if (procesando()) {
+              <span class="spinner" aria-hidden="true"></span>
+            }
+            Registrar
+          </button>
+        </form>
+
+        <!-- Códigos de prueba -->
+        <div class="rp-demo">
+          <span class="campo-etiqueta">Códigos de prueba</span>
+          <div class="rp-demo-chips">
+            @for (p of demo(); track p.codigo) {
+              <button
+                type="button"
+                class="rp-chip-demo mono"
+                [title]="p.nombre + ' · stock ' + p.stock"
+                (click)="probarDemo(p.codigo)"
+              >
+                {{ p.codigo }}
+              </button>
+            }
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ G. Controles ============ -->
+      <section class="rp-card rp-panel rp-controles" aria-label="Controles">
+        <div class="rp-panel-cabecera">
+          <div>
+            <h2 class="rp-seccion-titulo">Controles</h2>
+            <span class="rp-seccion-sub">Acciones rápidas del operario</span>
+          </div>
+        </div>
+        <div class="rp-controles-grid">
+          <button type="button" class="btn rp-btn" (click)="reiniciarDemo()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+              <path
+                d="M20 11A8 8 0 1 0 18.6 16M20 4v6h-6"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            Reiniciar demostración
+          </button>
+          <button type="button" class="btn rp-btn" (click)="limpiarLectura()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+              <path
+                d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            Limpiar lectura
+          </button>
+          <button
+            type="button"
+            class="btn rp-btn"
+            [disabled]="escaneando() || iniciando() || !soportado()"
+            (click)="iniciar()"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+              <circle cx="12" cy="12" r="3" stroke-width="1.8" />
+              <path
+                d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"
+                stroke-width="1.8"
+                stroke-linecap="round"
+              />
+            </svg>
+            Activar cámara
+          </button>
+          <button type="button" class="btn rp-btn" [disabled]="!escaneando()" (click)="detener()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+              <rect x="6" y="6" width="12" height="12" rx="2" stroke-width="1.8" />
+            </svg>
+            Detener cámara
+          </button>
+          <button
+            type="button"
+            class="btn rp-btn rp-btn-reintentar"
+            [disabled]="!pendiente()"
+            (click)="reintentarUltimo()"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+              <path
+                d="M21 12a9 9 0 1 1-2.6-6.4M21 3v6h-6"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            Reintentar clasificación
+            @if (serv.pendientes().length) {
+              <span class="rp-badge-contador">{{ serv.pendientes().length }}</span>
+            }
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <!-- Columna derecha -->
+    <div class="rp-col">
+      <!-- ============ D. Información del producto ============ -->
+      <section
+        class="rp-card rp-panel rp-producto"
+        [class.animar]="animarRegistro()"
+        aria-label="Información del producto"
+      >
+        <div class="rp-panel-cabecera">
+          <div>
+            <h2 class="rp-seccion-titulo">Información del producto</h2>
+            <span class="rp-seccion-sub">Resultado de la última validación</span>
+          </div>
+          @if (ultimoVivo(); as u) {
+            <span class="badge badge-{{ claseEstado(u.estado) }}">{{ u.estado }}</span>
+          }
+        </div>
+
+        @if (ultimoVivo(); as u) {
+          <div
+            class="rp-producto-hero"
+            [class.ok]="u.ok"
+            [class.warn]="!u.ok && u.estado === 'DESCONOCIDO'"
+            [class.danger]="!u.ok && u.estado === 'ERROR'"
+          >
+            <span class="rp-producto-icono" aria-hidden="true">
+              {{ u.ok ? '✓' : u.estado === 'DESCONOCIDO' ? '?' : '✕' }}
+            </span>
+            <div class="rp-producto-hero-texto">
+              <span class="rp-producto-codigo mono">{{ u.codigo || '—' }}</span>
+              <span class="rp-producto-nombre">{{ u.producto ?? u.mensaje }}</span>
+            </div>
+          </div>
+
+          <dl class="rp-datos">
+            <div class="rp-dato">
+              <dt>Código</dt>
+              <dd class="mono">{{ u.codigo || '—' }}</dd>
+            </div>
+            <div class="rp-dato">
+              <dt>Nombre</dt>
+              <dd>{{ u.producto ?? '—' }}</dd>
+            </div>
+            <div class="rp-dato">
+              <dt>Stock inicial</dt>
+              <dd class="mono">{{ u.stock_inicial ?? '—' }}</dd>
+            </div>
+            <div class="rp-dato">
+              <dt>Stock temporal</dt>
+              <dd class="mono rp-dato-destacado">{{ u.stock ?? '—' }}</dd>
+            </div>
+            <div class="rp-dato">
+              <dt>Cantidad recibida</dt>
+              <dd class="mono">{{ u.cantidad }}</dd>
+            </div>
+            <div class="rp-dato">
+              <dt>Resultado</dt>
+              <dd>
+                <span class="badge badge-{{ claseEstado(u.estado) }}">{{ u.estado }}</span>
+              </dd>
+            </div>
+          </dl>
+
+          <div class="rp-producto-pie">
+            <span class="rp-mqtt-chip" [class.ok]="u.mqtt_enviado">
+              <span class="rp-punto" [class.ok]="u.mqtt_enviado" aria-hidden="true"></span>
+              {{ u.mqtt_enviado ? 'Orden MQTT enviada' : 'Orden MQTT pendiente' }}
+            </span>
+            <span class="rp-clasif-chip clasif-{{ claseClasificacion(u.clasificacion) }}">
+              {{ etiquetaClasificacion(u.clasificacion) }}
+            </span>
+          </div>
+        } @else {
+          <app-empty-state
+            titulo="Sin producto seleccionado"
+            mensaje="Activa la cámara y enfoca un código, o usa un código de prueba para ver la validación."
+          />
+        }
+      </section>
+
+      <!-- ============ E. Panel de maqueta ============ -->
+      <section class="rp-card rp-panel rp-maqueta" aria-label="Panel de maqueta">
+        <div class="rp-panel-cabecera">
+          <div>
+            <h2 class="rp-seccion-titulo">Panel de maqueta</h2>
+            <span class="rp-seccion-sub">Estado físico del prototipo</span>
+          </div>
+          <span class="rp-servo-chip" [class.activo]="estado().servo === 'CLASIFICANDO'">
+            <span class="rp-servo-punto" aria-hidden="true"></span>
+            Servo: {{ estado().servo }}
+          </span>
+        </div>
+
+        <ul class="rp-maqueta-lista">
+          <li class="rp-maqueta-fila" [class.ok]="cajaPresente()">
+            <span class="rp-maqueta-etiqueta">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                <circle cx="12" cy="12" r="9" stroke-width="1.7" />
+                <circle cx="12" cy="12" r="3" stroke-width="1.7" />
+              </svg>
+              Detección de caja
+            </span>
+            <span class="rp-maqueta-valor">
+              <span
+                class="rp-punto"
+                [class.ok]="cajaPresente()"
+                [class.pulso]="deteccionReciente()"
+                aria-hidden="true"
+              ></span>
+              {{ cajaPresente() ? 'Detectada' : 'Sin caja' }}
+            </span>
+          </li>
+          <li class="rp-maqueta-fila" [class.ok]="estado().esp32_online">
+            <span class="rp-maqueta-etiqueta">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                <rect x="6" y="6" width="12" height="12" rx="2" stroke-width="1.7" />
+                <path
+                  d="M9 3v2M15 3v2M9 19v2M15 19v2M3 9h2M3 15h2M19 9h2M19 15h2"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
+              </svg>
+              Conexión ESP32
+            </span>
+            <span class="rp-maqueta-valor">
+              <span class="rp-punto" [class.ok]="estado().esp32_online" aria-hidden="true"></span>
+              {{ estado().esp32_online ? 'En línea' : 'Desconectado' }}
+            </span>
+          </li>
+          <li class="rp-maqueta-fila" [class.ok]="estado().mqtt_conectado">
+            <span class="rp-maqueta-etiqueta">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                <circle cx="12" cy="12" r="2.2" stroke-width="1.7" />
+                <path
+                  d="M7.5 7.5a6.4 6.4 0 0 0 0 9M16.5 7.5a6.4 6.4 0 0 1 0 9"
+                  stroke-width="1.7"
+                  stroke-linecap="round"
+                />
+              </svg>
+              Conexión MQTT
+            </span>
+            <span class="rp-maqueta-valor">
+              <span class="rp-punto" [class.ok]="estado().mqtt_conectado" aria-hidden="true"></span>
+              {{ estado().mqtt_conectado ? 'Conectado' : 'Desconectado' }}
+            </span>
+          </li>
+          <li class="rp-maqueta-fila">
+            <span class="rp-maqueta-etiqueta">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                <path d="M4 6h16M4 12h16M4 18h10" stroke-width="1.7" stroke-linecap="round" />
+              </svg>
+              Estado del servomotor
+            </span>
+            <span class="rp-maqueta-valor">
+              <span class="rp-servo-chip mini" [class.activo]="estado().servo === 'CLASIFICANDO'">
+                {{ estado().servo }}
+              </span>
+            </span>
+          </li>
+          <li class="rp-maqueta-fila">
+            <span class="rp-maqueta-etiqueta">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                <path
+                  d="M20 6 9 17l-5-5"
+                  stroke-width="1.9"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              Resultado físico
+            </span>
+            <span class="rp-maqueta-valor">
+              <span
+                class="rp-clasif-chip clasif-{{ claseClasificacionTexto(estado().clasificacion) }}"
+              >
+                {{ estado().clasificacion }}
+              </span>
+            </span>
+          </li>
+        </ul>
+
+        <div class="rp-maqueta-mensaje">
+          <span class="rp-maqueta-mensaje-etiqueta">Último mensaje</span>
+          <p class="rp-maqueta-mensaje-texto">{{ estado().ultimo_mensaje }}</p>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- ===================== F. Historial ===================== -->
+  <section class="rp-card rp-panel rp-historial" aria-label="Historial de recepciones">
+    <div class="rp-panel-cabecera">
+      <div>
+        <h2 class="rp-seccion-titulo">Historial de recepciones</h2>
+        <span class="rp-seccion-sub">
+          {{ serv.totalRecepciones() }} registradas · {{ serv.desconocidos() }} desconocidas
+        </span>
+      </div>
+    </div>
+
+    @if (!recientes().length) {
+      <app-empty-state
+        titulo="Sin recepciones todavía"
+        mensaje="Activa la cámara y enfoca un código, o usa un código de prueba para empezar."
+      />
+    } @else {
+      <div class="rp-tabla-scroll">
+        <table class="rp-tabla">
+          <thead>
+            <tr>
+              <th scope="col">Fecha y hora</th>
+              <th scope="col">Código</th>
+              <th scope="col">Producto</th>
+              <th scope="col" class="num">Cant.</th>
+              <th scope="col">Registro</th>
+              <th scope="col">Clasificación</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of recientes(); track r.id) {
+              <tr>
+                <td data-label="Fecha y hora">
+                  <span class="rp-tabla-hora mono">{{ exacto(r.fecha_registro) }}</span>
+                  <span class="rp-tabla-rel muted">{{ relativo(r.fecha_registro) }}</span>
+                </td>
+                <td data-label="Código">
+                  <span class="mono rp-tabla-codigo">{{ r.codigo_producto }}</span>
+                </td>
+                <td data-label="Producto">{{ r.nombre_producto }}</td>
+                <td data-label="Cant." class="num mono">{{ r.cantidad }}</td>
+                <td data-label="Registro">
+                  <span class="badge badge-{{ claseEstado(r.estado) }}">{{ r.estado }}</span>
+                </td>
+                <td data-label="Clasificación">
+                  <span class="rp-clasif-chip clasif-{{ claseClasificacion(r.clasificacion) }}">
+                    {{ etiquetaClasificacion(r.clasificacion) }}
+                  </span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+
+  <!-- Animación de éxito al confirmar la clasificación física -->
+  @if (mostrarExito()) {
+    <div class="rp-exito" role="status" aria-live="polite">
+      <span class="rp-exito-check" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path
+            d="M20 6 9 17l-5-5"
+            stroke-width="2.4"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </span>
+      <span class="rp-exito-texto">Clasificación confirmada por el ESP32</span>
+    </div>
+  }
+</div>

@@ -1,8 +1,19 @@
-/* Dashboard: apila KPIs, stands y la fila inferior (control + auditoría). */
+/* Dashboard: apila KPIs, stands y la fila inferior (control + auditoría).
+   Contenedor con el tema "Beige Premium" (mismo lenguaje que Recepción). */
 :host {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 18px;
+  padding: 24px;
+  border-radius: 26px;
+  color: var(--text);
+  background:
+    radial-gradient(900px 420px at 92% -12%, rgba(182, 155, 125, 0.28), transparent 60%),
+    radial-gradient(700px 440px at -8% 18%, rgba(120, 134, 107, 0.16), transparent 60%),
+    linear-gradient(158deg, #faf8f3 0%, #f7f3eb 46%, #efe7d9 100%);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-layer);
 }
 
 /* Control manual (1fr) junto a la auditoría (2fr); apilan en móvil. */
@@ -44,5 +55,20 @@
 @media (max-width: 1100px) {
   .fila-inferior {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 820px) {
+  :host {
+    padding: 18px;
+    border-radius: 20px;
+  }
+}
+
+@media (max-width: 560px) {
+  :host {
+    padding: 14px;
+    gap: 14px;
+    border-radius: 16px;
   }
 }

@@ -16,6 +16,7 @@ import { StoreService } from '../services/store.service';
   imports: [KpiSection, StandsSection, AuthPanel, ManualControl, AuditTable],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
+  host: { class: 'tema-beige' },
 })
 export class Dashboard implements OnInit {
   readonly store = inject(StoreService);

@@ -1,15 +1,16 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import { StatusDot } from '../../shared/components/status-dot/status-dot';
 import { StoreService } from '../../services/store.service';
 
 /**
- * Header — logo, nombre del sistema e indicadores en vivo:
+ * Header — logo, navegación entre secciones e indicadores en vivo:
  * Servidor (REST) y MQTT/Dispositivo (ESP32). Verde/ámbar/rojo con pulso.
  */
 @Component({
   selector: 'app-header',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [StatusDot],
+  imports: [StatusDot, RouterLink, RouterLinkActive],
   templateUrl: './header.html',
   styleUrl: './header.scss',
 })

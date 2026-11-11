@@ -1,0 +1,32 @@
+<section class="kpis" aria-label="Indicadores del sistema">
+  <article class="card kpi" style="--i: 0">
+    <span class="kpi-titulo">Movimientos hoy</span>
+    <app-number-ticker [valor]="totalHoy()" />
+    <span class="kpi-detalle">clasificaciones registradas</span>
+  </article>
+
+  <article class="card kpi" style="--i: 1">
+    <span class="kpi-titulo">Movimientos / minuto</span>
+    <app-number-ticker [valor]="porMinuto()" sufijo="/min" />
+    <span class="kpi-detalle">ventana móvil de 60 s</span>
+  </article>
+
+  <article class="card kpi" style="--i: 2">
+    <span class="kpi-titulo">Ocupación global</span>
+    <app-number-ticker [valor]="ocupacionGlobal()" sufijo="%" />
+    <span class="kpi-detalle">capacidad total del almacén</span>
+  </article>
+
+  <article class="card kpi kpi-ultimo" style="--i: 3">
+    <span class="kpi-titulo">Último evento</span>
+    @if (ultimo(); as m) {
+      <span class="kpi-uid mono">{{ m.rfid }}</span>
+      <span class="kpi-detalle">
+        Stand {{ m.stand }} · {{ m.estado }} · {{ ultimoRelativo() }}
+      </span>
+    } @else {
+      <span class="kpi-uid muted">Sin eventos aún</span>
+      <span class="kpi-detalle">esperando clasificaciones</span>
+    }
+  </article>
+</section>

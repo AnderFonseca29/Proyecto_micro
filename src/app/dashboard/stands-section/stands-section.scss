@@ -1,0 +1,200 @@
+/* Stands: rejilla 3/2/1 columnas con tarjetas glass y anillos animados. */
+.stands-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.stand {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  animation: entrada-tarjeta 400ms var(--ease) backwards;
+}
+
+/* Retardo escalonado por stand (A, B, C). */
+.stand-A { animation-delay: 0ms; }
+.stand-B { animation-delay: 90ms; }
+.stand-C { animation-delay: 180ms; }
+
+.stand-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.stand-nombre {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+  font-size: 1rem;
+  color: var(--text);
+}
+
+/* Punto de color del stand (A índigo, B cian, C ámbar). */
+.stand-punto {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--stand-color, var(--primary));
+}
+
+.stand-A .stand-punto { background: var(--stand-a); }
+.stand-B .stand-punto { background: var(--stand-b); }
+.stand-C .stand-punto { background: var(--stand-c); }
+
+.stand-A { --stand-color: var(--stand-a); }
+.stand-B { --stand-color: var(--stand-b); }
+.stand-C { --stand-color: var(--stand-c); }
+
+.stand-cuerpo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.ring-numero {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  font-size: 1.7rem;
+  line-height: 1;
+  color: var(--text);
+}
+
+.ring-detalle {
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.stand-porcentaje {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.stand-acciones {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.btn-clasificar {
+  flex: 1;
+}
+
+.btn-menu {
+  flex: none;
+  width: 40px;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+/* Menú desplegable (⋮) con fondo que cierra al hacer clic fuera. */
+.menu-envoltura {
+  position: relative;
+}
+
+.menu-fondo {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+}
+
+.menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 51;
+  min-width: 190px;
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-hover);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  animation: menu-in 200ms var(--ease);
+}
+
+.menu button {
+  border: none;
+  background: transparent;
+  text-align: left;
+  padding: 9px 12px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.menu button:hover {
+  background: rgba(79, 70, 229, 0.08);
+}
+
+.menu .menu-peligro {
+  color: var(--danger);
+}
+
+.menu .menu-peligro:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Skeletons de carga inicial. */
+.skeleton-card {
+  gap: 14px;
+  align-items: center;
+}
+
+.skeleton-card .anillo {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+}
+
+.skeleton-card .linea {
+  width: 60%;
+  height: 14px;
+}
+
+.skeleton-card .linea-titulo {
+  width: 40%;
+  height: 18px;
+  align-self: flex-start;
+}
+
+.skeleton-card .boton {
+  width: 100%;
+  height: 40px;
+  border-radius: 12px;
+}
+
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 900px) {
+  .stands-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .stands-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,26 @@
+@if (store.errorCarga(); as error) {
+  <!-- Error de carga inicial con reintento -->
+  <div class="card error-carga" role="alert">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" stroke-width="1.8" />
+      <path d="M12 8v4.5" stroke-width="2" stroke-linecap="round" />
+      <path d="M12 16h.01" stroke-width="2.4" stroke-linecap="round" />
+    </svg>
+    <h2>No se pudo cargar GESTOCK</h2>
+    <p class="muted">{{ error }}</p>
+    <button type="button" class="btn btn-primary" (click)="store.reintentar()">
+      Reintentar
+    </button>
+  </div>
+} @else {
+  <app-kpi-section />
+
+  <app-stands-section />
+
+  <app-auth-panel />
+
+  <div class="fila-inferior">
+    <app-manual-control />
+    <app-audit-table />
+  </div>
+}

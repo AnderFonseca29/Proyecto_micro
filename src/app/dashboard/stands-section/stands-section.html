@@ -1,0 +1,119 @@
+<section class="seccion" aria-label="Stands del almacén">
+  <div class="seccion-cabecera">
+    <h2 class="seccion-titulo">Stands del almacén</h2>
+    <span class="seccion-sub">Ocupación en tiempo real · umbral "casi lleno" al 80 %</span>
+  </div>
+
+  @if (cargando() && !stands().length) {
+    <!-- Skeleton mientras carga la primera vez -->
+    <div class="stands-grid">
+      @for (i of [1, 2, 3]; track i) {
+        <div class="card stand skeleton-card" aria-hidden="true">
+          <div class="skeleton linea-titulo"></div>
+          <div class="skeleton anillo"></div>
+          <div class="skeleton linea"></div>
+          <div class="skeleton boton"></div>
+        </div>
+      }
+    </div>
+  } @else if (!stands().length) {
+    <div class="card">
+      <app-empty-state
+        titulo="Sin stands disponibles"
+        mensaje="No se pudo obtener el estado de los stands. Verifique la conexión con el servidor." />
+    </div>
+  } @else {
+    <div class="stands-grid">
+      @for (v of vistas(); track v.codigo) {
+        <article class="card stand stand-{{ v.codigo }}" style="--i: {{ v.codigo }}">
+          <div class="stand-cabecera">
+            <span class="stand-nombre">
+              <span class="stand-punto" aria-hidden="true"></span>
+              Stand {{ v.codigo }}
+            </span>
+            <span class="badge badge-{{ v.clase }}">{{ v.etiqueta }}</span>
+          </div>
+
+          <div class="stand-cuerpo">
+            <app-progress-ring [porcentaje]="v.porcentaje" [color]="v.color">
+              <span class="ring-numero">{{ v.stand.ocupacion }}</span>
+              <span class="ring-detalle">/ {{ v.stand.capacidad }}</span>
+            </app-progress-ring>
+            <span class="stand-porcentaje mono">{{ v.porcentaje }} %</span>
+          </div>
+
+          <div class="stand-acciones">
+            <button
+              type="button"
+              class="btn btn-primary btn-clasificar"
+              [disabled]="clasificando() !== null || v.stand.ocupacion >= v.stand.capacidad"
+              (click)="clasificar(v.stand)">
+              @if (clasificando() === v.codigo) {
+                <span class="spinner" aria-hidden="true"></span>
+                Enviando…
+              } @else if (v.stand.ocupacion >= v.stand.capacidad) {
+                Stand lleno
+              } @else {
+                Clasificar aquí
+              }
+            </button>
+
+            <div class="menu-envoltura">
+              <button
+                type="button"
+                class="btn btn-ghost btn-menu"
+                [attr.aria-expanded]="menuAbierto() === v.codigo"
+                aria-label="Opciones del stand {{ v.codigo }}"
+                (click)="menuAbierto.set(menuAbierto() === v.codigo ? null : v.codigo)">
+                ⋯
+              </button>
+              @if (menuAbierto() === v.codigo) {
+                <div class="menu-fondo" (click)="menuAbierto.set(null)"></div>
+                <div class="menu" role="menu">
+                  <button type="button" role="menuitem" (click)="abrirEditar(v.stand)">
+                    Editar capacidad…
+                  </button>
+                  <button type="button" role="menuitem" class="menu-peligro" (click)="abrirReset(v.stand)">
+                    Reiniciar ocupación
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+        </article>
+      }
+    </div>
+  }
+
+  <!-- Modal: editar capacidad -->
+  <app-confirm-modal
+    [abierto]="modalEditar() !== null"
+    [titulo]="'Editar capacidad · Stand ' + (modalEditar()?.codigo ?? '')"
+    [mensaje]="'Ocupación actual: ' + (modalEditar()?.ocupacion ?? 0) + ' / ' + (modalEditar()?.capacidad ?? 0)"
+    textoConfirmar="Guardar"
+    [guardando]="guardando()"
+    (cerrar)="modalEditar.set(null)"
+    (confirmar)="guardarCapacidad()">
+    <label class="campo">
+      <span class="campo-etiqueta">Nueva capacidad</span>
+      <input
+        type="number"
+        class="input mono"
+        min="1"
+        max="100000"
+        [value]="capacidadEditada()"
+        (input)="capacidadEditada.set($any($event.target).valueAsNumber)" />
+    </label>
+  </app-confirm-modal>
+
+  <!-- Modal: reiniciar ocupación -->
+  <app-confirm-modal
+    [abierto]="modalReset() !== null"
+    [titulo]="'Reiniciar stand ' + (modalReset()?.codigo ?? '')"
+    [mensaje]="'Se pondrá la ocupación en 0. El histórico de movimientos se conserva.'"
+    textoConfirmar="Reiniciar"
+    [peligro]="true"
+    [guardando]="guardando()"
+    (cerrar)="modalReset.set(null)"
+    (confirmar)="confirmarReset()" />
+</section>

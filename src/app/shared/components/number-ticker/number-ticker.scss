@@ -1,0 +1,17 @@
+/* Contador animado: cifras técnicas en mono con números tabulares. */
+.ticker {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 2rem;
+  line-height: 1.1;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+
+.ticker-sufijo {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--muted);
+  margin-left: 2px;
+}

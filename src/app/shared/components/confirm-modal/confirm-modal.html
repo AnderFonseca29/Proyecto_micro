@@ -1,0 +1,32 @@
+@if (abierto()) {
+  <div class="modal-backdrop" (click)="cerrar.emit()" aria-hidden="true"></div>
+  <div class="modal-centro" role="dialog" aria-modal="true" [attr.aria-label]="titulo()">
+    <div class="modal-card">
+      <h3 class="modal-titulo">{{ titulo() }}</h3>
+      @if (mensaje()) {
+        <p class="modal-mensaje">{{ mensaje() }}</p>
+      }
+      <div class="modal-cuerpo">
+        <ng-content />
+      </div>
+      <div class="modal-acciones">
+        <button type="button" class="btn btn-ghost" (click)="cerrar.emit()">Cancelar</button>
+        <button
+          #btnConfirmar
+          type="button"
+          class="btn"
+          [class.btn-primary]="!peligro()"
+          [class.btn-danger]="peligro()"
+          [disabled]="guardando()"
+          (click)="confirmar.emit()">
+          @if (guardando()) {
+            <span class="spinner" aria-hidden="true"></span>
+            Guardando…
+          } @else {
+            {{ textoConfirmar() }}
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

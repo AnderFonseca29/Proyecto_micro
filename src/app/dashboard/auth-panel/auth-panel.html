@@ -1,0 +1,60 @@
+<section class="seccion card panel" aria-label="Autorización de cajas">
+  <div class="seccion-cabecera">
+    <div>
+      <h2 class="seccion-titulo">Autorización de cajas</h2>
+      <span class="seccion-sub">El ESP32 detecta la caja y su tamaño; tú decides si pasa.</span>
+    </div>
+
+    <button
+      type="button"
+      class="interruptor"
+      role="switch"
+      [attr.aria-checked]="store.autoAutorizar()"
+      [class.activo]="store.autoAutorizar()"
+      (click)="alternar()">
+      <span class="pista"><span class="perilla"></span></span>
+      <span class="interruptor-texto">
+        {{ store.autoAutorizar() ? 'Automático' : 'Manual' }}
+      </span>
+    </button>
+  </div>
+
+  @if (!store.pendientes().length) {
+    <div class="vacio" aria-live="polite">
+      <span class="vacio-icono" aria-hidden="true">📦</span>
+      <p>
+        {{ store.autoAutorizar()
+          ? 'Modo automático: las cajas se envían solas al stand según su tamaño.'
+          : 'Esperando una caja en el sensor…' }}
+      </p>
+    </div>
+  } @else {
+    <ul class="lista" aria-live="polite">
+      @for (d of store.pendientes(); track d.id) {
+        <li class="item">
+          <div class="info">
+            <span class="id mono">{{ d.id }}</span>
+            <span class="talla talla-{{ d.talla }}">{{ nombreTalla(d.talla) }}</span>
+            <span class="sugerido">
+              Sugerido: <strong class="stand stand-{{ d.stand }}">Stand {{ d.stand }}</strong>
+            </span>
+          </div>
+
+          <div class="acciones">
+            <button type="button" class="btn-autorizar" (click)="autorizar(d)">
+              ✓ Autorizar → {{ d.stand }}
+            </button>
+            @for (s of STANDS; track s) {
+              @if (s !== d.stand) {
+                <button type="button" class="btn-otro" [title]="'Enviar al stand ' + s" (click)="autorizar(d, s)">
+                  {{ s }}
+                </button>
+              }
+            }
+            <button type="button" class="btn-rechazar" (click)="rechazar(d)">✕ Rechazar</button>
+          </div>
+        </li>
+      }
+    </ul>
+  }
+</section>

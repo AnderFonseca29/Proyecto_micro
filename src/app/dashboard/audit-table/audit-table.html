@@ -1,0 +1,235 @@
+<section class="seccion auditoria" aria-label="Auditoría de movimientos en tiempo real">
+  <div class="seccion-cabecera">
+    <div class="titulo-fila">
+      <h2 class="seccion-titulo">Auditoría en tiempo real</h2>
+      <span class="vivo" [class.activo]="enVivo()">
+        <span class="vivo-punto" aria-hidden="true"></span>
+        {{ enVivo() ? 'EN VIVO' : 'SIN CONEXIÓN' }}
+      </span>
+    </div>
+    <div class="acciones-fila">
+      <span class="seccion-sub contador mono">{{ paginacion().total }} movimientos</span>
+      <button
+        type="button"
+        class="btn btn-ghost"
+        [disabled]="!paginacion().total"
+        (click)="store.exportarCsv()">
+        ⬇ Exportar CSV
+      </button>
+    </div>
+  </div>
+
+  <!-- Barra de filtros -->
+  <div class="filtros card">
+    <div class="filtro campo">
+      <label class="campo-etiqueta" for="f-stand">Stand</label>
+      <select
+        id="f-stand"
+        class="input"
+        [value]="filtros().stand"
+        (change)="filtrarStand($any($event.target).value)">
+        <option value="">Todos</option>
+        @for (s of codigos(); track s) {
+          <option [value]="s">Stand {{ s }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="filtro campo">
+      <label class="campo-etiqueta" for="f-estado">Estado</label>
+      <select
+        id="f-estado"
+        class="input"
+        [value]="filtros().estado"
+        (change)="filtrarEstado($any($event.target).value)">
+        <option value="">Todos</option>
+        @for (e of ESTADOS; track e) {
+          <option [value]="e">{{ e }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="filtro campo">
+      <label class="campo-etiqueta" for="f-origen">Origen</label>
+      <select
+        id="f-origen"
+        class="input"
+        [value]="filtros().origen"
+        (change)="filtrarOrigen($any($event.target).value)">
+        <option value="">Todos</option>
+        <option value="hardware">Hardware (ESP32)</option>
+        <option value="web">Web</option>
+      </select>
+    </div>
+
+    <div class="filtro filtro-q campo">
+      <label class="campo-etiqueta" for="f-q">Buscar caja</label>
+      <input
+        id="f-q"
+        type="search"
+        class="input mono"
+        placeholder="Ej. CAJA-0007"
+        autocomplete="off"
+        [value]="busqueda()"
+        (input)="escribir($any($event.target).value)" />
+    </div>
+
+    <div class="filtro campo">
+      <label class="campo-etiqueta" for="f-desde">Desde</label>
+      <input
+        id="f-desde"
+        type="date"
+        class="input"
+        [value]="filtros().desde"
+        (change)="filtrarDesde($any($event.target).value)" />
+    </div>
+
+    <div class="filtro campo">
+      <label class="campo-etiqueta" for="f-hasta">Hasta</label>
+      <input
+        id="f-hasta"
+        type="date"
+        class="input"
+        [value]="filtros().hasta"
+        (change)="filtrarHasta($any($event.target).value)" />
+    </div>
+
+    <button
+      type="button"
+      class="btn btn-ghost btn-limpiar"
+      [disabled]="!tieneFiltros() && !busqueda()"
+      (click)="limpiar()">
+      ✕ Limpiar filtros
+    </button>
+  </div>
+
+  <!-- Tabla -->
+  <div class="tabla-envoltura card">
+    @if (cargando() && !filas().length) {
+      <!-- Skeleton de primera carga -->
+      <table class="tabla" aria-hidden="true">
+        <thead>
+          <tr>
+            <th scope="col">Caja</th>
+            <th scope="col">Stand</th>
+            <th scope="col">Estado</th>
+            <th scope="col">Origen</th>
+            <th scope="col">Fecha y hora</th>
+            <th scope="col" class="col-dispositivo">Tamaño</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (i of [1, 2, 3, 4, 5, 6]; track i) {
+            <tr>
+              <td><span class="skeleton sk-chip"></span></td>
+              <td><span class="skeleton sk-badge"></span></td>
+              <td><span class="skeleton sk-badge"></span></td>
+              <td><span class="skeleton sk-badge"></span></td>
+              <td><span class="skeleton sk-texto"></span></td>
+              <td class="col-dispositivo"><span class="skeleton sk-texto"></span></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    } @else if (!filas().length) {
+      <app-empty-state [titulo]="vacioTitulo()" [mensaje]="vacioMensaje()" />
+    } @else {
+      <table class="tabla">
+        <caption class="sr-only">Historial de movimientos de clasificación</caption>
+        <thead>
+          <tr>
+            <th scope="col">Caja</th>
+            <th scope="col">Stand</th>
+            <th scope="col">Estado</th>
+            <th scope="col">Origen</th>
+            <th scope="col">Fecha y hora</th>
+            <th scope="col" class="col-dispositivo">Tamaño</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (m of filas(); track m.id) {
+            <tr [class.nueva]="idsRecientes().has(m.id)">
+              <td>
+                <span class="uid-celda">
+                  <span class="uid-chip mono">{{ m.rfid }}</span>
+                  <button
+                    type="button"
+                    class="btn-copiar"
+                    [attr.aria-label]="'Copiar UID ' + m.rfid"
+                    [title]="'Copiar ' + m.rfid"
+                    (click)="copiarUid(m)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                      <rect x="9" y="9" width="11" height="11" rx="2.5" stroke-width="1.8" />
+                      <path d="M5 15V6a2 2 0 0 1 2-2h9" stroke-width="1.8" stroke-linecap="round" />
+                    </svg>
+                  </button>
+                </span>
+              </td>
+              <td>
+                <span class="badge-stand stand-{{ m.stand }}">
+                  <span class="punto" aria-hidden="true"></span>
+                  {{ m.stand }}
+                </span>
+              </td>
+              <td>
+                <span class="badge badge-{{ claseEstado(m.estado) }}">{{ m.estado }}</span>
+              </td>
+              <td>
+                <span class="origen origen-{{ m.origen }}" [title]="'Origen: ' + m.origen">
+                  @if (m.origen === 'hardware') {
+                    <!-- Chip con patas: lectura RFID del ESP32 -->
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                      <rect x="7" y="7" width="10" height="10" rx="2" stroke-width="1.8" />
+                      <path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3" stroke-width="1.8" stroke-linecap="round" />
+                    </svg>
+                    Sensor ESP32
+                  } @else {
+                    <!-- Globo: clasificación desde la web -->
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                      <circle cx="12" cy="12" r="9" stroke-width="1.8" />
+                      <path d="M3 12h18M12 3a14 14 0 0 1 0 18a14 14 0 0 1 0-18" stroke-width="1.8" />
+                    </svg>
+                    Web
+                  }
+                </span>
+              </td>
+              <td>
+                <span class="fecha" [title]="exacto(m.fecha_registro)">
+                  <span class="fecha-exacta mono">{{ exacto(m.fecha_registro) }}</span>
+                  <span class="fecha-relativa">{{ relativo(m.fecha_registro) }}</span>
+                </span>
+              </td>
+              <td class="col-dispositivo">
+                <span class="dispositivo mono">{{ m.talla === 'P' ? 'Pequeña' : m.talla === 'M' ? 'Mediana' : m.talla === 'G' ? 'Grande' : '—' }}</span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+
+  <!-- Paginación -->
+  <div class="paginacion">
+    <span class="paginacion-info muted">
+      Mostrando {{ paginacion().desde }}–{{ paginacion().hasta }} de {{ paginacion().total }}
+    </span>
+    <div class="paginacion-botones">
+      <button
+        type="button"
+        class="btn btn-ghost"
+        [disabled]="!paginacion().hayAnterior || cargando()"
+        (click)="irPagina(paginacion().pagina - 1)">
+        ← Anterior
+      </button>
+      <span class="paginacion-actual mono">{{ paginacion().pagina }} / {{ paginacion().paginas }}</span>
+      <button
+        type="button"
+        class="btn btn-ghost"
+        [disabled]="!paginacion().haySiguiente || cargando()"
+        (click)="irPagina(paginacion().pagina + 1)">
+        Siguiente →
+      </button>
+    </div>
+  </div>
+</section>

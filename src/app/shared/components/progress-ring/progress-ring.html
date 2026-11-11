@@ -1,0 +1,35 @@
+<svg
+  class="anillo"
+  [attr.width]="tamano()"
+  [attr.height]="tamano()"
+  [attr.viewBox]="'0 0 ' + tamano() + ' ' + tamano()"
+  role="img"
+  [attr.aria-label]="'Progreso: ' + porcentaje() + '%'">
+  <!-- Pista de fondo -->
+  <circle
+    class="anillo-pista"
+    [attr.cx]="tamano() / 2"
+    [attr.cy]="tamano() / 2"
+    [attr.r]="radio()"
+    [attr.stroke-width]="grosor()"
+    fill="none"
+  />
+  <!-- Aro de progreso (dashoffset animado por transition) -->
+  <circle
+    class="anillo-progreso"
+    [attr.cx]="tamano() / 2"
+    [attr.cy]="tamano() / 2"
+    [attr.r]="radio()"
+    [attr.stroke-width]="grosor()"
+    [attr.stroke]="color()"
+    [attr.stroke-dasharray]="circunferencia()"
+    [attr.stroke-dashoffset]="offset()"
+    fill="none"
+  />
+  <!-- Contenido central (texto de ocupación) -->
+  <foreignObject [attr.width]="tamano()" [attr.height]="tamano()">
+    <div class="anillo-centro">
+      <ng-content />
+    </div>
+  </foreignObject>
+</svg>

@@ -1,0 +1,176 @@
+/* Panel de control manual: segmented control, botón principal con ripple
+   y estados, acciones secundarias y aviso de dispositivo offline. */
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 20px;
+}
+
+.aviso-offline {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #92600a;
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.aviso-offline svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  margin-top: 1px;
+}
+
+/* Campos del formulario. */
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.campo-etiqueta {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+/* Segmented control A/B/C. */
+.segmented {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  padding: 4px;
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.05);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.segmento {
+  border: none;
+  background: transparent;
+  padding: 9px 10px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 180ms var(--ease);
+}
+
+.segmento:hover:not(:disabled) {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.segmento.activo {
+  color: #fff;
+  background: var(--seg-color, var(--primary));
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.16);
+}
+
+.segmento-A { --seg-color: var(--stand-a); }
+.segmento-B { --seg-color: var(--stand-b); }
+.segmento-C { --seg-color: var(--stand-c); }
+
+/* Fila de UID + botón generador. */
+.uid-fila {
+  display: flex;
+  gap: 8px;
+}
+
+.uid-fila .input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Botón principal con estados y ripple. */
+.btn-principal {
+  position: relative;
+  overflow: hidden;
+  padding: 14px 18px;
+  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  font-weight: 700;
+  box-shadow: 0 8px 20px rgba(79, 70, 229, 0.35);
+  transition: transform 180ms var(--ease), box-shadow 180ms var(--ease), filter 180ms var(--ease);
+}
+
+.btn-principal:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  box-shadow: 0 12px 26px rgba(79, 70, 229, 0.42);
+}
+
+.btn-principal:disabled {
+  cursor: not-allowed;
+  filter: grayscale(0.4);
+  opacity: 0.75;
+}
+
+.btn-principal.exito {
+  background: linear-gradient(135deg, var(--ok), #34d399);
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.35);
+}
+
+.btn-principal.error {
+  background: linear-gradient(135deg, var(--danger), #f87171);
+  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.35);
+  animation: shake 400ms var(--ease);
+}
+
+/* Efecto ripple en el punto de clic. */
+.btn-principal .ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  transform: scale(0);
+  animation: ripple 600ms var(--ease);
+  pointer-events: none;
+}
+
+.cmd-confirmacion {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+/* Acciones secundarias. */
+.secundarias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.btn-discreto {
+  font-size: 0.8rem;
+}
+
+@keyframes ripple {
+  to {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25%      { transform: translateX(-5px); }
+  50%      { transform: translateX(5px); }
+  75%      { transform: translateX(-3px); }
+}

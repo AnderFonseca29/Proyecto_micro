@@ -1,0 +1,20 @@
+<div class="toasts" role="status" aria-live="polite" aria-label="Notificaciones">
+  @for (t of toasts(); track t.id) {
+    <div class="toast toast-{{ t.tipo }}" [class.salida]="t.cerrando">
+      <div class="toast-cuerpo">
+        <span class="toast-titulo">{{ t.titulo }}</span>
+        @if (t.mensaje) {
+          <span class="toast-mensaje">{{ t.mensaje }}</span>
+        }
+      </div>
+      <button
+        type="button"
+        class="toast-cerrar"
+        (click)="cerrar(t.id)"
+        aria-label="Cerrar notificación">
+        ✕
+      </button>
+      <span class="toast-barra" [style.animation-duration.ms]="t.duracion"></span>
+    </div>
+  }
+</div>

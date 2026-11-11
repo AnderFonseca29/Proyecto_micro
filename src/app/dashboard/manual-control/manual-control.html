@@ -1,0 +1,102 @@
+<section class="seccion card panel" aria-label="Panel de control manual">
+  <div class="seccion-cabecera">
+    <h2 class="seccion-titulo">Control manual</h2>
+    <span class="seccion-sub">Mover el servo a un stand sin esperar una caja</span>
+  </div>
+
+  @if (!habilitado()) {
+    <div class="aviso-offline" role="alert">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+        <path d="M12 9v4" stroke-width="2" stroke-linecap="round" />
+        <path d="M12 17h.01" stroke-width="2.4" stroke-linecap="round" />
+        <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" stroke-width="1.7" stroke-linejoin="round" />
+      </svg>
+      <span>ESP32 offline: las acciones manuales se habilitan cuando el ESP32 publique su estado "online".</span>
+    </div>
+  }
+
+  <!-- Segmented control de stand -->
+  <div class="campo">
+    <span class="campo-etiqueta">Stand destino</span>
+    <div class="segmented" role="radiogroup" aria-label="Stand destino">
+      @for (s of STANDS; track s) {
+        <button
+          type="button"
+          class="segmento segmento-{{ s }}"
+          role="radio"
+          [attr.aria-checked]="seleccion() === s"
+          [class.activo]="seleccion() === s"
+          [disabled]="!habilitado()"
+          [title]="tooltip()"
+          (click)="seleccionar(s)">
+          Stand {{ s }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- UID opcional -->
+  <div class="campo">
+    <span class="campo-etiqueta">ID de caja (opcional)</span>
+    <div class="uid-fila">
+      <input
+        type="text"
+        class="input mono"
+        placeholder="Ej. CAJA-0001"
+        maxlength="50"
+        [value]="uid()"
+        [disabled]="!habilitado()"
+        (input)="uid.set($any($event.target).value)"
+        aria-label="ID de caja" />
+      <button
+        type="button"
+        class="btn btn-ghost"
+        [disabled]="!habilitado()"
+        [title]="tooltip()"
+        (click)="generarUid()">
+        Generar ID
+      </button>
+    </div>
+  </div>
+
+  <!-- Botón principal -->
+  <button
+    type="button"
+    class="btn btn-principal"
+    [class.enviando]="estadoEnvio() === 'enviando'"
+    [class.exito]="estadoEnvio() === 'exito'"
+    [class.error]="estadoEnvio() === 'error'"
+    [disabled]="!habilitado() || estadoEnvio() === 'enviando' || standLleno()"
+    [title]="standLleno() ? 'El stand seleccionado está lleno.' : tooltip()"
+    (click)="enviar()">
+    @if (estadoEnvio() === 'enviando') {
+      <span class="spinner" aria-hidden="true"></span>
+      Enviando…
+    } @else if (estadoEnvio() === 'exito') {
+      ✓ Enviado
+    } @else if (estadoEnvio() === 'error') {
+      ✕ Reintentar
+    } @else if (standLleno()) {
+      Stand {{ seleccion() }} lleno
+    } @else {
+      Enviar clasificación → Stand {{ seleccion() }}
+    }
+  </button>
+
+  @if (ultimoCmd(); as cmd) {
+    <span class="cmd-confirmacion mono">último comando: {{ cmd }}</span>
+  }
+
+  <!-- Acciones secundarias -->
+  <div class="secundarias">
+    <button
+      type="button"
+      class="btn btn-ghost"
+      [disabled]="!habilitado()"
+      [title]="tooltip()"
+      (click)="probarServo()">
+      ⚙ Probar servo
+    </button>
+  </div>
+
+</section>

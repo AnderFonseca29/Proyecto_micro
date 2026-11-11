@@ -1,0 +1,104 @@
+/* Contenedor global de toasts (esquina superior derecha). */
+.toasts {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(360px, calc(100vw - 32px));
+  pointer-events: none;
+}
+
+.toast {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-layer);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  animation: toast-in 300ms var(--ease);
+  pointer-events: auto;
+}
+
+.toast-cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.toast-titulo {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.toast-mensaje {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+/* Banda de color a la izquierda según el tipo. */
+.toast-success { border-left: 4px solid var(--ok); }
+.toast-error   { border-left: 4px solid var(--danger); }
+.toast-warn    { border-left: 4px solid var(--warn); }
+.toast-info    { border-left: 4px solid var(--primary); }
+
+.toast-cerrar {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 2px 4px;
+  border-radius: 6px;
+  line-height: 1;
+}
+
+.toast-cerrar:hover {
+  color: var(--text);
+  background: rgba(15, 23, 42, 0.06);
+}
+
+/* Barra de progreso del autocierre. */
+.toast-barra {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 3px;
+  width: 100%;
+  background: currentColor;
+  opacity: 0.25;
+  transform-origin: left;
+  animation: toast-barra linear forwards;
+  animation-duration: inherit;
+}
+
+.toast-success .toast-barra { background: var(--ok); opacity: 0.7; }
+.toast-error   .toast-barra { background: var(--danger); opacity: 0.7; }
+.toast-warn    .toast-barra { background: var(--warn); opacity: 0.7; }
+.toast-info    .toast-barra { background: var(--primary); opacity: 0.7; }
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes toast-barra {
+  from { transform: scaleX(1); }
+  to   { transform: scaleX(0); }
+}

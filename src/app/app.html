@@ -1,0 +1,18 @@
+<app-header />
+
+@if (mostrarBanner()) {
+  <!-- Banner de reconexión WebSocket -->
+  <div class="banner-reconexion" role="status" aria-live="polite">
+    <span class="banner-punto" aria-hidden="true"></span>
+    <span class="banner-texto">{{ mensajeBanner() }}</span>
+    <button type="button" class="btn btn-ghost banner-btn" (click)="reintentarConexion()">
+      Reconectar ahora
+    </button>
+  </div>
+}
+
+<main class="contenido">
+  <router-outlet />
+</main>
+
+<app-toast-container />

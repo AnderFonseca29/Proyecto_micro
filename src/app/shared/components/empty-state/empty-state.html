@@ -1,0 +1,12 @@
+<div class="vacio" role="status">
+  <svg class="vacio-icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+    <path d="M21 8v13H3V8" stroke-width="1.6" stroke-linejoin="round" />
+    <path d="M1 3h22v5H1z" stroke-width="1.6" stroke-linejoin="round" />
+    <path d="M10 12h4" stroke-width="1.6" stroke-linecap="round" />
+  </svg>
+  <h4 class="vacio-titulo">{{ titulo() }}</h4>
+  @if (mensaje()) {
+    <p class="vacio-mensaje">{{ mensaje() }}</p>
+  }
+  <ng-content />
+</div>

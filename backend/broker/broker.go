@@ -16,6 +16,14 @@ import (
 	"gestock-iot-backend/store"
 )
 
+// Eventos permite que la capa HTTP reaccione a los mensajes del dispositivo
+// sin que este paquete dependa de controladores (evita importaciones cíclicas).
+type Eventos struct {
+	Sensor        func(dispositivo string, presente bool, nueva bool)
+	Clasificacion func(rec store.Recepcion, completada bool, detalle string)
+	Conexion      func(conectado bool)
+}
+
 // Broker gestiona la conexión MQTT y el modo simulación.
 type Broker struct {
 	cfg       config.Config
@@ -24,11 +32,19 @@ type Broker struct {
 	cliente   mqtt.Client
 	conectado bool
 	simulando bool
+	eventos   Eventos
 }
 
 // Nuevo crea el servicio de broker (sin conectar todavía).
 func Nuevo(cfg config.Config, st *store.Store) *Broker {
 	return &Broker{cfg: cfg, st: st}
+}
+
+// SetEventos registra los callbacks de la capa de aplicación.
+func (b *Broker) SetEventos(e Eventos) {
+	b.mu.Lock()
+	b.eventos = e
+	b.mu.Unlock()
 }
 
 // Conectar inicia la conexión MQTT o el modo simulación. No bloquea.
@@ -50,9 +66,12 @@ func (b *Broker) Conectar() {
 		SetKeepAlive(30 * time.Second).
 		SetOnConnectHandler(b.alConectar).
 		SetConnectionLostHandler(func(_ mqtt.Client, err error) {
+			anterior := b.st.SetMQTT(false)
 			b.setConectado(false)
-			b.st.SetMQTT(false)
 			log.Printf("[mqtt] conexión perdida: %v", err)
+			if anterior {
+				b.emitirConexion(false)
+			}
 		})
 
 	b.mu.Lock()
@@ -73,6 +92,7 @@ func (b *Broker) alConectar(c mqtt.Client) {
 	log.Printf("[mqtt] conectado. Suscripción a %s y %s", b.cfg.TopicSensor, b.cfg.TopicEstado)
 	c.Subscribe(b.cfg.TopicSensor, 1, b.alSensor)
 	c.Subscribe(b.cfg.TopicEstado, 1, b.alEstado)
+	b.emitirConexion(true)
 }
 
 // Conectado indica si hay conexión activa con el broker.
@@ -108,7 +128,7 @@ func (b *Broker) PublicarClasificacion(rec store.Recepcion) error {
 	b.mu.Unlock()
 
 	tok := cliente.Publish(b.cfg.TopicClasificador, 1, false, payload)
-	if !tok.WaitTimeout(5*time.Second) {
+	if !tok.WaitTimeout(5 * time.Second) {
 		return fmt.Errorf("tiempo de espera agotado al publicar")
 	}
 	if err := tok.Error(); err != nil {
@@ -135,6 +155,7 @@ func (b *Broker) alSensor(_ mqtt.Client, msg mqtt.Message) {
 	if nueva {
 		log.Printf("[mqtt] caja detectada por %s", ev.Dispositivo)
 	}
+	b.emitirSensor(ev.Dispositivo, ev.Estado, nueva)
 }
 
 func (b *Broker) alEstado(_ mqtt.Client, msg mqtt.Message) {
@@ -152,11 +173,20 @@ func (b *Broker) alEstado(_ mqtt.Client, msg mqtt.Message) {
 
 	switch ev.Estado {
 	case "clasificacion_completada":
-		b.st.MarcarClasificacion(ev.IDOperacion, true, "Clasificación completada por el ESP32")
-		log.Printf("[mqtt] clasificación completada: %s", ev.IDOperacion)
+		detalle := "Clasificación completada por el ESP32"
+		if b.st.MarcarClasificacion(ev.IDOperacion, true, detalle) {
+			log.Printf("[mqtt] clasificación completada: %s", ev.IDOperacion)
+			b.emitirClasificacion(ev.IDOperacion, true, detalle)
+		}
 	case "error":
-		b.st.MarcarClasificacion(ev.IDOperacion, false, "Error del ESP32: "+ev.Mensaje)
-		log.Printf("[mqtt] error de clasificación: %s", ev.IDOperacion)
+		detalle := "Error del ESP32: " + ev.Mensaje
+		if b.st.MarcarClasificacion(ev.IDOperacion, false, detalle) {
+			log.Printf("[mqtt] error de clasificación: %s", ev.IDOperacion)
+			b.emitirClasificacion(ev.IDOperacion, false, detalle)
+		}
+	default:
+		// Mensajes informativos del dispositivo: se reflejan en el estado IoT.
+		b.emitirSensor("", false, false)
 	}
 }
 
@@ -169,6 +199,7 @@ func (b *Broker) iniciarSimulacion() {
 
 	b.st.SetSimulacion(true)
 	b.st.SetMQTT(false)
+	b.st.SetESP32(true, time.Now().UTC().Format(time.RFC3339))
 	log.Printf("[mqtt] sin MQTT_BROKER_URL → MODO SIMULACIÓN (ESP32 emulado)")
 
 	go func() {
@@ -177,7 +208,11 @@ func (b *Broker) iniciarSimulacion() {
 		for range t.C {
 			for _, rec := range b.st.Pendientes() {
 				time.Sleep(b.cfg.SimulacionDelay)
-				b.st.MarcarClasificacion(rec.IDOperacion, true, "Clasificación simulada (modo demostración)")
+				detalle := "Clasificación simulada (modo demostración, sin hardware)"
+				if b.st.MarcarClasificacion(rec.IDOperacion, true, detalle) {
+					b.st.SetESP32(true, time.Now().UTC().Format(time.RFC3339))
+					b.emitirClasificacion(rec.IDOperacion, true, detalle)
+				}
 			}
 		}
 	}()
@@ -187,6 +222,36 @@ func (b *Broker) setConectado(v bool) {
 	b.mu.Lock()
 	b.conectado = v
 	b.mu.Unlock()
+}
+
+func (b *Broker) emitirConexion(conectado bool) {
+	b.mu.Lock()
+	fn := b.eventos.Conexion
+	b.mu.Unlock()
+	if fn != nil {
+		fn(conectado)
+	}
+}
+
+func (b *Broker) emitirSensor(dispositivo string, presente, nueva bool) {
+	b.mu.Lock()
+	fn := b.eventos.Sensor
+	b.mu.Unlock()
+	if fn != nil {
+		fn(dispositivo, presente, nueva)
+	}
+}
+
+func (b *Broker) emitirClasificacion(idOperacion string, completada bool, detalle string) {
+	b.mu.Lock()
+	fn := b.eventos.Clasificacion
+	b.mu.Unlock()
+	if fn == nil {
+		return
+	}
+	if rec, ok := b.st.RecepcionPorOperacion(idOperacion); ok {
+		fn(rec, completada, detalle)
+	}
 }
 
 // Desconectar cierra el cliente MQTT de forma ordenada.
